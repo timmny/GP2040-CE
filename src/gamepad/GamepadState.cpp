@@ -99,78 +99,81 @@ uint8_t filterToFourWayMode(uint8_t dpad)
  */
 uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
 {
-	if (mode == SOCD_MODE_BYPASS) {
-		return dpad;
-	}
-	// カスタムSOCD: ↙（左下）＋↓＋→ → →のみ残す
-	if ((dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_DOWN | GAMEPAD_RIGHT)) == (GAMEPAD_MASK_LEFT | GAMEPAD_DOWN | GAMEPAD_RIGHT)) {
-		return GAMEPAD_MASK_RIGHT;
-	}
+    if (mode == SOCD_MODE_BYPASS) {
+        return dpad;
+    }
 
-	// カスタムSOCD: ↘（右下）＋↓＋← → ←のみ残す
-	if ((dpad & (GAMEPAD_MASK_RIGHT | GAMEPAD_DOWN | GAMEPAD_LEFT)) == (GAMEPAD_MASK_RIGHT | GAMEPAD_DOWN | GAMEPAD_LEFT)) {
-		return GAMEPAD_MASK_LEFT;
-	}
-	static DpadDirection lastUD = DIRECTION_NONE;
-	static DpadDirection lastLR = DIRECTION_NONE;
-	uint8_t newDpad = 0;
+    // ※ここで直接条件分岐する方法も考えられますが、lastLR が未更新のため、下部で調整する案を採用します。
 
-	switch (dpad & (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN))
-	{
-		case (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN):
-			if (mode == SOCD_MODE_UP_PRIORITY)
-			{
-				newDpad |= GAMEPAD_MASK_UP;
-				lastUD = DIRECTION_UP;
-			}
-			else if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastUD != DIRECTION_NONE)
-				newDpad |= (lastUD == DIRECTION_UP) ? GAMEPAD_MASK_DOWN : GAMEPAD_MASK_UP;
-			else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastUD != DIRECTION_NONE)
-				newDpad |= (lastUD == DIRECTION_UP) ? GAMEPAD_MASK_UP : GAMEPAD_MASK_DOWN;
-			else
-				lastUD = DIRECTION_NONE;
-			break;
+    static DpadDirection lastUD = DIRECTION_NONE;
+    static DpadDirection lastLR = DIRECTION_NONE;
+    uint8_t newDpad = 0;
 
-		case GAMEPAD_MASK_UP:
-			newDpad |= GAMEPAD_MASK_UP;
-			lastUD = DIRECTION_UP;
-			break;
+    switch (dpad & (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN))
+    {
+        case (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN):
+            if (mode == SOCD_MODE_UP_PRIORITY)
+            {
+                newDpad |= GAMEPAD_MASK_UP;
+                lastUD = DIRECTION_UP;
+            }
+            else if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastUD != DIRECTION_NONE)
+                newDpad |= (lastUD == DIRECTION_UP) ? GAMEPAD_MASK_DOWN : GAMEPAD_MASK_UP;
+            else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastUD != DIRECTION_NONE)
+                newDpad |= (lastUD == DIRECTION_UP) ? GAMEPAD_MASK_UP : GAMEPAD_MASK_DOWN;
+            else
+                lastUD = DIRECTION_NONE;
+            break;
 
-		case GAMEPAD_MASK_DOWN:
-			newDpad |= GAMEPAD_MASK_DOWN;
-			lastUD = DIRECTION_DOWN;
-			break;
+        case GAMEPAD_MASK_UP:
+            newDpad |= GAMEPAD_MASK_UP;
+            lastUD = DIRECTION_UP;
+            break;
 
-		default:
-			lastUD = DIRECTION_NONE;
-			break;
-	}
+        case GAMEPAD_MASK_DOWN:
+            newDpad |= GAMEPAD_MASK_DOWN;
+            lastUD = DIRECTION_DOWN;
+            break;
 
-	switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
-	{
-		case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
-			if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
-				newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_RIGHT : GAMEPAD_MASK_LEFT;
-			else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
-				newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
-			else
-				lastLR = DIRECTION_NONE;
-			break;
+        default:
+            lastUD = DIRECTION_NONE;
+            break;
+    }
 
-		case GAMEPAD_MASK_LEFT:
-			newDpad |= GAMEPAD_MASK_LEFT;
-			lastLR = DIRECTION_LEFT;
-			break;
+    switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
+    {
+        case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
+            if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
+                newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_RIGHT : GAMEPAD_MASK_LEFT;
+            else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
+                newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
+            else
+                lastLR = DIRECTION_NONE;
+            break;
 
-		case GAMEPAD_MASK_RIGHT:
-			newDpad |= GAMEPAD_MASK_RIGHT;
-			lastLR = DIRECTION_RIGHT;
-			break;
+        case GAMEPAD_MASK_LEFT:
+            newDpad |= GAMEPAD_MASK_LEFT;
+            lastLR = DIRECTION_LEFT;
+            break;
 
-		default:
-			lastLR = DIRECTION_NONE;
-			break;
-	}
+        case GAMEPAD_MASK_RIGHT:
+            newDpad |= GAMEPAD_MASK_RIGHT;
+            lastLR = DIRECTION_RIGHT;
+            break;
 
-	return newDpad;
+        default:
+            lastLR = DIRECTION_NONE;
+            break;
+    }
+
+    // ★ カスタムSOCDロジック: 特定の条件下で縦入力(DOWN)と反対側の横入力を排除
+    if ((newDpad & GAMEPAD_MASK_DOWN) && (newDpad & GAMEPAD_MASK_LEFT) && (newDpad & GAMEPAD_MASK_RIGHT)) {
+        if (lastLR == DIRECTION_RIGHT) {
+            newDpad &= ~(GAMEPAD_MASK_DOWN | GAMEPAD_MASK_LEFT); // → のみ残す
+        } else if (lastLR == DIRECTION_LEFT) {
+            newDpad &= ~(GAMEPAD_MASK_DOWN | GAMEPAD_MASK_RIGHT); // ← のみ残す
+        }
+    }
+
+    return newDpad;
 }

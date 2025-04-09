@@ -103,11 +103,23 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
         return dpad;
     }
 
+    // --- ✅ カスタムSOCD処理を先頭に移動 ---
+    // ↙（←+↓）中に → を押したら → のみにする
+    if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT)) {
+        return GAMEPAD_MASK_RIGHT;
+    }
+
+    // ↘（→+↓）中に ← を押したら ← のみにする
+    if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT)) {
+        return GAMEPAD_MASK_LEFT;
+    }
+
+    // --- 通常のSOCD処理 ---
     static DpadDirection lastUD = DIRECTION_NONE;
     static DpadDirection lastLR = DIRECTION_NONE;
     uint8_t newDpad = 0;
 
-    // --- 上下のSOCD処理 ---
+    // 上下のSOCD処理
     switch (dpad & (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN))
     {
         case (GAMEPAD_MASK_UP | GAMEPAD_MASK_DOWN):
@@ -139,7 +151,7 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
             break;
     }
 
-    // --- 左右のSOCD処理 ---
+    // 左右のSOCD処理
     switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
     {
         case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
@@ -164,17 +176,6 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
         default:
             lastLR = DIRECTION_NONE;
             break;
-    }
-
-    // --- カスタムSOCD処理：↙+→ or ↘+← のとき、単方向に限定 ---
-    // ↙（←+↓）中に → を押したら → のみにする
-    if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {
-        return GAMEPAD_MASK_RIGHT;
-    }
-
-    // ↘（→+↓）中に ← を押したら ← のみにする
-    if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
-        return GAMEPAD_MASK_LEFT;
     }
 
     return newDpad;

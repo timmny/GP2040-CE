@@ -102,7 +102,15 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
 	if (mode == SOCD_MODE_BYPASS) {
 		return dpad;
 	}
+	// カスタムSOCD: ↙（左下）＋↓＋→ → →のみ残す
+	if ((dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_DOWN | GAMEPAD_RIGHT)) == (GAMEPAD_MASK_LEFT | GAMEPAD_DOWN | GAMEPAD_RIGHT)) {
+		return GAMEPAD_MASK_RIGHT;
+	}
 
+	// カスタムSOCD: ↘（右下）＋↓＋← → ←のみ残す
+	if ((dpad & (GAMEPAD_MASK_RIGHT | GAMEPAD_DOWN | GAMEPAD_LEFT)) == (GAMEPAD_MASK_RIGHT | GAMEPAD_DOWN | GAMEPAD_LEFT)) {
+		return GAMEPAD_MASK_LEFT;
+	}
 	static DpadDirection lastUD = DIRECTION_NONE;
 	static DpadDirection lastLR = DIRECTION_NONE;
 	uint8_t newDpad = 0;

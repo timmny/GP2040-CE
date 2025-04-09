@@ -166,17 +166,15 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
             break;
     }
 
-    // --- カスタムSOCD：一時的に→または←のみを優先、離したら戻る ---
-    // ※ newDpad の状態と生の入力 dpad の両方をチェックするのがポイント
-
-    // ↙（←+↓）中に → が押された場合 → のみ出力（→を離すと戻る）
-    if ((newDpad & GAMEPAD_MASK_LEFT) && (newDpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {
-        newDpad &= ~(GAMEPAD_MASK_DOWN | GAMEPAD_MASK_LEFT);
+    // --- カスタムSOCD処理：↙+→ or ↘+← のとき、単方向に限定 ---
+    // ↙（←+↓）中に → を押したら → のみにする
+    if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {
+        return GAMEPAD_MASK_RIGHT;
     }
 
-    // ↘（→+↓）中に ← が押された場合 ← のみ出力（←を離すと戻る）
-    if ((newDpad & GAMEPAD_MASK_RIGHT) && (newDpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
-        newDpad &= ~(GAMEPAD_MASK_DOWN | GAMEPAD_MASK_RIGHT);
+    // ↘（→+↓）中に ← を押したら ← のみにする
+    if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
+        return GAMEPAD_MASK_LEFT;
     }
 
     return newDpad;

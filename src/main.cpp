@@ -1,13 +1,10 @@
-    stdio_init_all();     // ← これを先頭に追加
 /*
  * SPDX-License-Identifier: MIT
  * SPDX-FileCopyrightText: Copyright (c) 2024 OpenStickCommunity (gp2040-ce.info)
  */
 
-// Pi Pico includes
+#include "pico/stdlib.h"           // ← 必須：stdio_init_all に必要！
 #include "pico/multicore.h"
-
-// GP2040 includes
 #include "gp2040.h"
 #include "gp2040aux.h"
 
@@ -34,6 +31,8 @@ void core1() {
 }
 
 int main() {
+	stdio_init_all(); // ✅ 正しい位置：main関数の最初に移動！
+
 	// Create GP2040 Main Core (core0), Core1 is dependent on Core0
 	gp2040Core0 = new GP2040();
 	gp2040Core1 = new GP2040Aux();

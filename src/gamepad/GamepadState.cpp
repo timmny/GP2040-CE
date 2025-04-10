@@ -1,5 +1,6 @@
 #include "GamepadState.h"
 #include "drivermanager.h"
+#include <stdio.h>
 
 // Convert the horizontal GamepadState dpad axis value into an analog value
 uint16_t dpadToAnalogX(uint8_t dpad)
@@ -186,5 +187,7 @@ switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
         return GAMEPAD_MASK_LEFT;
     }
     prevDpad = dpad;
+printf("LR: %d | dpad: %02X | out: %02X\n", lastLR, dpad, newDpad);
     return newDpad;
+
 }

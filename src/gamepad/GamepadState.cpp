@@ -105,6 +105,14 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
 
     static DpadDirection lastUD = DIRECTION_NONE;
     static DpadDirection lastLR = DIRECTION_NONE;
+    static uint8_t prevDpad = 0;
+    uint8_t pressedNow = dpad & ~prevDpad;
+
+    if (pressedNow & GAMEPAD_MASK_LEFT)
+        lastLR = DIRECTION_LEFT;
+    else if (pressedNow & GAMEPAD_MASK_RIGHT)
+        lastLR = DIRECTION_RIGHT;
+
     uint8_t newDpad = 0;
 
     // --- 上下のSOCD処理 ---
@@ -177,6 +185,6 @@ switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
     if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
         return GAMEPAD_MASK_LEFT;
     }
-
+    prevDpad = dpad;
     return newDpad;
 }

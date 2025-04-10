@@ -139,32 +139,35 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
             break;
     }
 
-    // --- 左右のSOCD処理（lastLRの更新をここで実行） ---
-    switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
-    {
-        case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
-            if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
-                newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
-            else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
-                newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
-            else
-                lastLR = DIRECTION_NONE;
-            break;
+// 左右のSOCD処理（常に lastLR を更新する構造に変更）
+switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
+{
+	case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
+		if (mode == SOCD_MODE_SECOND_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
+			newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
+		else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
+			newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
+		// 👇 個別方向が今も押されているなら更新
+		if (dpad & GAMEPAD_MASK_LEFT)
+			lastLR = DIRECTION_LEFT;
+		if (dpad & GAMEPAD_MASK_RIGHT)
+			lastLR = DIRECTION_RIGHT;
+		break;
 
-        case GAMEPAD_MASK_LEFT:
-            newDpad |= GAMEPAD_MASK_LEFT;
-            lastLR = DIRECTION_LEFT;
-            break;
+	case GAMEPAD_MASK_LEFT:
+		newDpad |= GAMEPAD_MASK_LEFT;
+		lastLR = DIRECTION_LEFT;
+		break;
 
-        case GAMEPAD_MASK_RIGHT:
-            newDpad |= GAMEPAD_MASK_RIGHT;
-            lastLR = DIRECTION_RIGHT;
-            break;
+	case GAMEPAD_MASK_RIGHT:
+		newDpad |= GAMEPAD_MASK_RIGHT;
+		lastLR = DIRECTION_RIGHT;
+		break;
 
-        default:
-            lastLR = DIRECTION_NONE;
-            break;
-    }
+	default:
+		lastLR = DIRECTION_NONE;
+		break;
+}
 
     // --- ✅ カスタムSOCD：↙ + → →のみ、↘ + ← ←のみ ---
     if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {

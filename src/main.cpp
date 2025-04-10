@@ -31,7 +31,6 @@ void core1() {
 }
 
 int main() {
-	stdio_init_all(); // ✅ 正しい位置：main関数の最初に移動！
 
 	// Create GP2040 Main Core (core0), Core1 is dependent on Core0
 	gp2040Core0 = new GP2040();

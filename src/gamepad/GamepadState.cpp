@@ -180,11 +180,12 @@ switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
 		break;
 }
 
-// ✅ 単独入力時に明示的に lastLR を更新（後入れ優先の保持）
-if ((dpad & GAMEPAD_MASK_LEFT) && !(dpad & GAMEPAD_MASK_RIGHT))
-	lastLR = DIRECTION_LEFT;
-else if ((dpad & GAMEPAD_MASK_RIGHT) && !(dpad & GAMEPAD_MASK_LEFT))
-	lastLR = DIRECTION_RIGHT;
+    // ✅ 単独入力時に明示的に lastLR を更新（後入れ優先の保持）
+    if ((dpad & GAMEPAD_MASK_LEFT) && !(dpad & GAMEPAD_MASK_RIGHT))
+        lastLR = DIRECTION_LEFT;
+    else if ((dpad & GAMEPAD_MASK_RIGHT) && !(dpad & GAMEPAD_MASK_LEFT))
+        lastLR = DIRECTION_RIGHT;
 
-prevDpad = dpad;
-return newDpad;
+    prevDpad = dpad;
+    return newDpad;
+}

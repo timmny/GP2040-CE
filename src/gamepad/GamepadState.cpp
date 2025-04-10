@@ -1,6 +1,5 @@
 #include "GamepadState.h"
 #include "drivermanager.h"
-#include <stdio.h>
 
 // Convert the horizontal GamepadState dpad axis value into an analog value
 uint16_t dpadToAnalogX(uint8_t dpad)
@@ -148,7 +147,15 @@ uint8_t runSOCDCleaner(SOCDMode mode, uint8_t dpad)
             break;
     }
 
-// 左右のSOCD処理（常に lastLR を更新する構造に変更）
+// --- ✅ カスタムSOCD：↙ + → →のみ、↘ + ← ←のみ（優先的に return） ---
+if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {
+    return GAMEPAD_MASK_RIGHT;
+}
+if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
+    return GAMEPAD_MASK_LEFT;
+}
+
+// --- 左右のSOCD処理（常に lastLR を更新する構造） ---
 switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
 {
 	case (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT):
@@ -156,11 +163,6 @@ switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
 			newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
 		else if (mode == SOCD_MODE_FIRST_INPUT_PRIORITY && lastLR != DIRECTION_NONE)
 			newDpad |= (lastLR == DIRECTION_LEFT) ? GAMEPAD_MASK_LEFT : GAMEPAD_MASK_RIGHT;
-		// 👇 個別方向が今も押されているなら更新
-		if (dpad & GAMEPAD_MASK_LEFT)
-			lastLR = DIRECTION_LEFT;
-		if (dpad & GAMEPAD_MASK_RIGHT)
-			lastLR = DIRECTION_RIGHT;
 		break;
 
 	case GAMEPAD_MASK_LEFT:
@@ -178,16 +180,11 @@ switch (dpad & (GAMEPAD_MASK_LEFT | GAMEPAD_MASK_RIGHT))
 		break;
 }
 
-    // --- ✅ カスタムSOCD：↙ + → →のみ、↘ + ← ←のみ ---
-    if ((dpad & GAMEPAD_MASK_LEFT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_RIGHT) && lastLR == DIRECTION_RIGHT) {
-        return GAMEPAD_MASK_RIGHT;
-    }
+// ✅ 単独入力時に明示的に lastLR を更新（後入れ優先の保持）
+if ((dpad & GAMEPAD_MASK_LEFT) && !(dpad & GAMEPAD_MASK_RIGHT))
+	lastLR = DIRECTION_LEFT;
+else if ((dpad & GAMEPAD_MASK_RIGHT) && !(dpad & GAMEPAD_MASK_LEFT))
+	lastLR = DIRECTION_RIGHT;
 
-    if ((dpad & GAMEPAD_MASK_RIGHT) && (dpad & GAMEPAD_MASK_DOWN) && (dpad & GAMEPAD_MASK_LEFT) && lastLR == DIRECTION_LEFT) {
-        return GAMEPAD_MASK_LEFT;
-    }
-    prevDpad = dpad;
-printf("LR: %d | dpad: %02X | out: %02X\n", lastLR, dpad, newDpad);
-    return newDpad;
-
-}
+prevDpad = dpad;
+return newDpad;

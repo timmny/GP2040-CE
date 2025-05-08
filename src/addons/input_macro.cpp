@@ -1,7 +1,7 @@
 #include "addons/input_macro.h"
 #include "storagemanager.h"
 #include "GamepadState.h"
-#include <stdlib.h> // rand()
+
 #include "hardware/gpio.h"
 
 bool InputMacro::available() {
@@ -89,11 +89,9 @@ void InputMacro::restart(Macro& macro) {
     macroStartTime = currentMicros;
     macroInputPosition = 0;
     MacroInput& newMacroInput = macro.macroInputs[macroInputPosition];
-    uint32_t randomOffset = newMacroInput.randomDelayRange > 0 ? rand() % newMacroInput.randomDelayRange : 0;
-    uint32_t newMacroInputDuration = newMacroInput.duration + newMacroInput.waitDuration + randomOffset;
+    uint32_t newMacroInputDuration = newMacroInput.duration + newMacroInput.waitDuration;
     macroInputHoldTime = newMacroInputDuration <= 0 ? INPUT_HOLD_US : newMacroInputDuration;
 }
-
 
 void InputMacro::checkMacroPress() {
     Gamepad * gamepad = Storage::getInstance().GetGamepad();
@@ -213,10 +211,9 @@ void InputMacro::runCurrentMacro() {
                 restart(macro); // On Hold-Repeat or On Toggle = start macro again
             }
         } else {
-					MacroInput& newMacroInput = macro.macroInputs[macroInputPosition];
-					uint32_t randomOffset = newMacroInput.randomDelayRange > 0 ? rand() % newMacroInput.randomDelayRange : 0;
-					uint32_t newMacroInputDuration = newMacroInput.duration + newMacroInput.waitDuration + randomOffset;
-					macroInputHoldTime = newMacroInputDuration <= 0 ? INPUT_HOLD_US : newMacroInputDuration;
+            MacroInput& newMacroInput = macro.macroInputs[macroInputPosition];
+            uint32_t newMacroInputDuration = newMacroInput.duration + newMacroInput.waitDuration;
+            macroInputHoldTime = newMacroInputDuration <= 0 ? INPUT_HOLD_US : newMacroInputDuration;
         }
     }
 

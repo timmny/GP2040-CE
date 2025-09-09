@@ -32,8 +32,8 @@ const MACRO_TYPES = [
 	{ label: 'InputMacroAddon:input-macro-type.hold-repeat', value: 2 },
 	{ label: 'InputMacroAddon:input-macro-type.toggle', value: 3 },
 ];
-const MACRO_INPUTS_MAX = 30;
-const MACRO_LIMIT = 6;
+const MACRO_INPUTS_MAX = 20;
+const MACRO_LIMIT = 8;
 
 const schema = yup.object().shape({
 	macroList: yup.array().of(
@@ -67,8 +67,11 @@ const defaultMacroInput = {
 	waitDuration: 0,
 };
 
-const defaultValues = {
-	macroList: Array(MACRO_LIMIT).fill({
+-const defaultValues = {
+-  macroList: Array(MACRO_LIMIT).fill({
++const defaultValues = {
++  // fillは同一参照になるのでmapで個別オブジェクトを作る
++  macroList: Array.from({ length: MACRO_LIMIT }, () => ({
 		macroType: 1,
 		macroLabel: '',
 		enabled: 0,
@@ -78,7 +81,8 @@ const defaultValues = {
 		useMacroTriggerButton: 0,
 		macroTriggerButton: 0,
 		macroInputs: [defaultMacroInput],
-	}),
+-  }),
++  })),
 	macroBoardLedEnabled: 0,
 };
 

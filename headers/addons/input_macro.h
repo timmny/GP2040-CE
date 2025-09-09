@@ -26,7 +26,7 @@
 #endif
 
 #define MAX_MACRO_INPUT_LIMIT 20
-#define MAX_MACRO_LIMIT 8
+#define MAX_MACRO_LIMIT 12
 #define INPUT_HOLD_US 16666
 
 // Input Macro Module Name
@@ -51,7 +51,7 @@ private:
     bool isMacroTriggerHeld;
     int macroPosition;
     uint32_t macroButtonMask;
-    uint32_t macroPinMasks[6];
+    uint32_t macroPinMasks[12];
     uint64_t macroStartTime;
     uint64_t currentMicros;
     int pressedMacro;

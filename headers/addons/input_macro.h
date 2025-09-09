@@ -51,7 +51,7 @@ private:
     bool isMacroTriggerHeld;
     int macroPosition;
     uint32_t macroButtonMask;
-    uint32_t macroPinMasks[6];
+    uint32_t macroPinMasks[MAX_MACRO_LIMIT];
     uint64_t macroStartTime;
     uint64_t currentMicros;
     int pressedMacro;

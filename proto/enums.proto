@@ -356,6 +356,13 @@ enum GpioAction
     MODE_WHEEL_PEDAL_GAS         = 128;
     MODE_WHEEL_PEDAL_BRAKE       = 129;
     MODE_WHEEL_PEDAL_CLUTCH      = 130;
+   // --- Add: Macro 7–12 (append-only; do NOT renumber existing items) ---
+    BUTTON_PRESS_MACRO_7         = 131;
+    BUTTON_PRESS_MACRO_8         = 132;
+    BUTTON_PRESS_MACRO_9         = 133;
+    BUTTON_PRESS_MACRO_10        = 134;
+    BUTTON_PRESS_MACRO_11        = 135;
+    BUTTON_PRESS_MACRO_12        = 136;
 }
 
 enum GpioDirection

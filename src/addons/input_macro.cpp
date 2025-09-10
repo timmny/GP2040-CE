@@ -3,7 +3,7 @@
 #include "GamepadState.h"
 
 #include "hardware/gpio.h"
-
+#include <algorithm>
 static inline int macroIndexFromAction(GpioAction a) {
     if (a >= GpioAction::BUTTON_PRESS_MACRO_1 && a <= GpioAction::BUTTON_PRESS_MACRO_6)
         return (int)a - (int)GpioAction::BUTTON_PRESS_MACRO_1;        // 0..5
@@ -16,7 +16,7 @@ bool InputMacro::available() {
     GpioMappingInfo* pinMappings = Storage::getInstance().getProfilePinMappings();
     for (Pin_t pin = 0; pin < (Pin_t)NUM_BANK0_GPIOS; pin++) {
         GpioAction act = pinMappings[pin].action;
-        if (act == GpioAction::BUTTON_PRESS_MACRO) return true;   // 共通トリガーボタン
+        if (act == GpioAction::BUTTON_PRESS_MACRO) return true;   // 共通トリガー
         if (macroIndexFromAction(act) >= 0) return true;           // Macro 1..12 のどれか
     }
     return false;
@@ -46,22 +46,6 @@ void InputMacro::setup() {
     } else {
         boardLedEnabled = false;
     }
-    // ↓これが残っていると常に消灯になるので削除/コメントアウト推奨
-    // boardLedEnabled = false;
-
-    prevMacroInputPressed = false;
-    reset();
-}
-
-    inputMacroOptions = &Storage::getInstance().getAddonOptions().macroOptions;
-    if (inputMacroOptions->macroBoardLedEnabled && isValidPin(BOARD_LED_PIN)) {
-        gpio_init(BOARD_LED_PIN);
-        gpio_set_dir(BOARD_LED_PIN, GPIO_OUT);
-        boardLedEnabled = true;
-    } else {
-        boardLedEnabled = false;
-    }
-    boardLedEnabled = false;
     prevMacroInputPressed = false;
     reset();
 }
@@ -92,9 +76,10 @@ void InputMacro::checkMacroPress() {
     Gamepad * gamepad = Storage::getInstance().GetGamepad();
     Mask_t allPins = gamepad->debouncedGpio;
 
-    // Go through our macro list
     pressedMacro = -1;
-    for(int i = 0; i < MAX_MACRO_LIMIT; i++) {
+    const int count =
+        std::min<int>(inputMacroOptions->macroList_count, MAX_MACRO_LIMIT);
+    for (int i = 0; i < count; ++i) {
         if ( inputMacroOptions->macroList[i].enabled == false ) // Skip disabled macros
             continue;
         Macro * macro = &inputMacroOptions->macroList[i];
